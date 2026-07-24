@@ -5,3 +5,7 @@ frontend/.next/
 frontend/out/
 server/lib/
 server/dist/
+
+frontend/public/galaxy.html
+
+frontend/public/logo.png

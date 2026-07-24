@@ -27,7 +27,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0e14] text-gray-100">{children}</body>
+      <body className="min-h-full flex flex-col text-gray-100 bg-transparent">
+        <iframe 
+          src="/galaxy.html" 
+          className="fixed inset-0 w-full h-full pointer-events-none -z-50 border-none"
+          title="Background Galaxy"
+        />
+        <div className="relative z-0 flex flex-col min-h-screen">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

@@ -17,8 +17,8 @@
 }
 
 html, body {
-  background: var(--background);
   color: var(--foreground);
+  background-color: transparent;
 }
 
 /* Smooth scroll + selection color */
@@ -40,4 +40,9 @@ html, body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* Hide Next.js Dev Badge */
+nextjs-portal {
+  display: none !important;
 }

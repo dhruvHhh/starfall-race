@@ -29,19 +29,6 @@ function getRandomParagraph() {
     return PRACTICE_PARAGRAPHS[Math.floor(Math.random() * PRACTICE_PARAGRAPHS.length)];
 }
 
-function getAvatarColor(name: string) {
-    const colors = [
-        "from-blue-500 to-blue-600",
-        "from-purple-500 to-purple-600",
-        "from-green-500 to-green-600",
-        "from-rose-500 to-rose-600",
-        "from-amber-500 to-amber-600",
-        "from-cyan-500 to-cyan-600",
-    ];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-}
 
 export default function Home() {
     const [timerMode, setTimerMode] = useState<TimerMode>(30);
@@ -55,6 +42,7 @@ export default function Home() {
     const [timeLeft, setTimeLeft] = useState<number>(30);
     const [startTime, setStartTime] = useState<number | null>(null);
     const [totalMistakes, setTotalMistakes] = useState(0);
+    const totalMistakesRef = useRef(0);
     const [finalWpm, setFinalWpm] = useState(0);
     const [finalAccuracy, setFinalAccuracy] = useState(0);
 
@@ -77,6 +65,7 @@ export default function Home() {
         setTimeLeft(m);
         setStartTime(null);
         setTotalMistakes(0);
+        totalMistakesRef.current = 0;
         totalTypedChars.current = 0;
         lastValRef.current = "";
         setParagraph(getRandomParagraph());
@@ -120,7 +109,7 @@ export default function Home() {
                 const remaining = Math.max(0, Math.ceil((end - Date.now()) / 1000));
                 setTimeLeft(remaining);
                 if (remaining <= 0) {
-                    finishGame(lastValRef.current, paragraphRef.current, totalMistakes, Date.now() - now);
+                    finishGame(lastValRef.current, paragraphRef.current, totalMistakesRef.current, Date.now() - now);
                 }
             }, 100);
         }
@@ -141,13 +130,13 @@ export default function Home() {
                 if (addedChars[i] !== paragraph[prevVal.length + i]) newMistakes++;
             }
             if (newMistakes > 0) {
-                setTotalMistakes(prev => prev + newMistakes);
+                totalMistakesRef.current += newMistakes;
+                setTotalMistakes(totalMistakesRef.current);
             }
         }
         
         lastValRef.current = val;
         setTypedText(val);
-        }
     };
 
     const handleClickArea = () => {
@@ -200,28 +189,17 @@ export default function Home() {
         : 100;
 
     return (
-        <div className="min-h-screen bg-[#0a0e14] text-gray-100 flex flex-col">
-            {/* Dot grid overlay */}
-            <div
-                className="pointer-events-none fixed inset-0 opacity-[0.35]"
-                style={{
-                    backgroundImage: "radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px)",
-                    backgroundSize: "24px 24px",
-                }}
-            />
-
+        <div className="flex-1 flex flex-col bg-transparent">
             {/* Nav */}
-            <header className="relative z-10 flex items-center justify-between px-8 py-4 border-b border-white/5 bg-[#0a0e14]/90 backdrop-blur-sm sticky top-0">
+            <header className="relative z-10 flex items-center justify-between px-8 py-4 border-b border-white/5 bg-black/40 backdrop-blur-md sticky top-0">
                 <div className="flex items-center gap-10">
-                    <Link href="/" className="flex items-center gap-2">
-                        <Zap className="w-5 h-5 text-blue-500" fill="currentColor" />
+                    <Link href="/" className="flex items-center gap-3">
+                        <img src="/logo.png" alt="Type Brawl" className="w-8 h-8 rounded-lg" />
                         <span className="text-lg font-bold text-white tracking-tight">Type Brawl</span>
                     </Link>
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
                         <Link href="/" className="text-white border-b-2 border-blue-500 pb-0.5">Practice</Link>
                         <Link href="/race" className="text-gray-400 hover:text-gray-200 transition-colors">Multiplayer</Link>
-                        <a href="#" className="text-gray-400 hover:text-gray-200 transition-colors">Leaderboards</a>
-                        <a href="#" className="text-gray-400 hover:text-gray-200 transition-colors">About</a>
                     </nav>
                 </div>
                 <div className="flex items-center gap-4">
@@ -304,13 +282,7 @@ export default function Home() {
                                     <span className="animate-pulse text-blue-500">|</span>
                                 )}
                             </div>
-                            {gameState === "idle" && (
-                                <div className="absolute inset-0 flex items-center justify-center rounded-2xl">
-                                    <p className="text-gray-600 text-sm tracking-wide">
-                                        Click here or start typing to begin the test
-                                    </p>
-                                </div>
-                            )}
+                            {/* Removed overlay */}
                         </div>
 
                         {/* Reset button */}
@@ -365,10 +337,7 @@ export default function Home() {
                 )}
             </main>
 
-            {/* Footer */}
-            <footer className="relative z-10 text-center py-6 text-gray-700 text-xs border-t border-white/5">
-                Type Brawl — built for speed
-            </footer>
+            {/* Footer Removed */}
         </div>
     );
 }
