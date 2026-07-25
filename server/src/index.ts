@@ -8,7 +8,7 @@ import { TypingRoom } from "./rooms/TypingRoom";
 const app = express();
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: process.env.CLIENT_ORIGIN || "*",
         credentials: true,
     })
 );
@@ -22,5 +22,6 @@ const server = defineServer({
     },
 });
 
-server.listen(2567);
-console.log("Colyseus server listening on ws://localhost:2567");
+const port = Number(process.env.PORT) || 2567;
+server.listen(port);
+console.log(`Colyseus server listening on port ${port}`);

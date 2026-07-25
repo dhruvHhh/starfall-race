@@ -270,7 +270,7 @@ export default function Home() {
                                 className="absolute opacity-0 w-0 h-0 pointer-events-none"
                                 value={typedText}
                                 onChange={handleInput}
-                                disabled={gameState === "finished"}
+                                disabled={false}
                                 autoComplete="off"
                                 autoCorrect="off"
                                 autoCapitalize="off"
@@ -278,7 +278,7 @@ export default function Home() {
                             />
                             <div className="text-xl md:text-2xl leading-relaxed tracking-wide font-mono select-none">
                                 {renderParagraph()}
-                                {typedText.length === paragraph.length && gameState !== "finished" && (
+                                {typedText.length === paragraph.length && (
                                     <span className="animate-pulse text-blue-500">|</span>
                                 )}
                             </div>

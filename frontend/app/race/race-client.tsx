@@ -124,9 +124,9 @@ export default function RaceClient() {
 
             const cb = Callbacks.get(activeRoom);
 
-            cb.onAdd("players", (player: any, key: string) => {
+            cb.onAdd("players", (player: any, key: any) => {
                 const snap = () => ({
-                    sessionId: key,
+                    sessionId: String(key),
                     name: player.name,
                     progress: player.progress,
                     finished: player.finished,
@@ -134,23 +134,23 @@ export default function RaceClient() {
                     ready: player.ready,
                     wpm: player.wpm,
                 });
-                setPlayers(prev => ({ ...prev, [key]: snap() }));
+                setPlayers(prev => ({ ...prev, [String(key)]: snap() }));
                 cb.listen(player, "progress", (val: number) => {
-                    setPlayers(prev => ({ ...prev, [key]: { ...prev[key], progress: val } }));
+                    setPlayers(prev => ({ ...prev, [String(key)]: { ...prev[String(key)], progress: val } }));
                 });
                 cb.listen(player, "wpm", (val: number) => {
-                    setPlayers(prev => ({ ...prev, [key]: { ...prev[key], wpm: val } }));
+                    setPlayers(prev => ({ ...prev, [String(key)]: { ...prev[String(key)], wpm: val } }));
                 });
                 cb.listen(player, "ready", (val: boolean) => {
-                    setPlayers(prev => ({ ...prev, [key]: { ...prev[key], ready: val } }));
+                    setPlayers(prev => ({ ...prev, [String(key)]: { ...prev[String(key)], ready: val } }));
                 });
                 cb.listen(player, "finished", (val: boolean) => {
-                    setPlayers(prev => ({ ...prev, [key]: { ...prev[key], finished: val } }));
+                    setPlayers(prev => ({ ...prev, [String(key)]: { ...prev[String(key)], finished: val } }));
                 });
             });
 
-            cb.onRemove("players", (_: any, key: string) => {
-                setPlayers(prev => { const n = { ...prev }; delete n[key]; return n; });
+            cb.onRemove("players", (_: any, key: any) => {
+                setPlayers(prev => { const n = { ...prev }; delete n[String(key)]; return n; });
             });
 
             cb.listen("paragraph", (v: string) => setParagraph(v));
