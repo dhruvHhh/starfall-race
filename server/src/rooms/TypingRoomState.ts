@@ -7,6 +7,8 @@ export class Player extends Schema {
     @type("number") finishTime: number = 0;
     @type("boolean") ready: boolean = false;
     @type("number") wpm: number = 0;
+    /** Joined after the race began, so they sit out until the next one. */
+    @type("boolean") spectating: boolean = false;
 }
 
 export class TypingRoomState extends Schema {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import NightScene from "./night-scene";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Type Brawl — Multiplayer Typing Race",
-  description: "Race against friends in real-time typing battles. Sharpen your speed and accuracy.",
+  title: "Starfall — Multiplayer Typing Race",
+  description: "Race friends in real-time typing battles under a night sky. Sharpen your speed and accuracy.",
 };
 
 export default function RootLayout({
@@ -27,12 +28,8 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col text-gray-100 bg-transparent">
-        <iframe 
-          src="/galaxy.html" 
-          className="fixed inset-0 w-full h-full pointer-events-none -z-50 border-none"
-          title="Background Galaxy"
-        />
+      <body className="min-h-full flex flex-col text-[var(--ink)] antialiased">
+        <NightScene />
         <div className="relative z-0 flex flex-col min-h-screen">
           {children}
         </div>

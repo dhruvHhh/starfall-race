@@ -1,13 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0e14;
-  --foreground: #f3f4f6;
+  color-scheme: dark;
+
+  /* Night sky, from the deep top of the frame down to the horizon. */
+  --night-0: #04060e;
+  --night-1: #070c1c;
+  --night-2: #0c1530;
+  --night-3: #142348;
+  --night-4: #1e3159;
+  --horizon: #33477a;
+
+  /* Ink */
+  --ink: #e8eefc;
+  --ink-soft: #a3b5d6;
+  --ink-faint: #67799d;
+
+  /* Moonlit cyan for interactive things, warm amber for the caret and the
+     glow on the horizon. */
+  --accent: #6cc5ff;
+  --accent-deep: #2b8fd4;
+  --accent-warm: #f5c66b;
+
+  --panel-bg: rgba(6, 11, 26, 0.74);
+  --panel-line: rgba(142, 180, 255, 0.16);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--night-1);
+  --color-foreground: var(--ink);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,33 +37,635 @@
   box-sizing: border-box;
 }
 
-html, body {
-  color: var(--foreground);
+html {
+  background-color: var(--night-0);
+}
+
+/* Body must stay transparent. A negative-z-index fixed child of <body> paints
+   below the backgrounds of body's in-flow content, so giving body an opaque
+   background would bury the whole night scene. */
+body {
+  color: var(--ink);
   background-color: transparent;
 }
 
-/* Smooth scroll + selection color */
 ::selection {
-  background: rgba(59, 130, 246, 0.35);
-  color: white;
+  background: rgba(108, 197, 255, 0.28);
+  color: #fff;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
+  background: rgba(163, 181, 214, 0.22);
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(163, 181, 214, 0.38);
 }
 
-/* Hide Next.js Dev Badge */
 nextjs-portal {
   display: none !important;
+}
+
+/* ══ Night scene ═══════════════════════════════════════════════════════════
+   Every layer animates opacity or transform only, so the whole backdrop runs
+   on the compositor and leaves the main thread free for the typing test.
+   No canvas, no requestAnimationFrame, no JavaScript at all.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -50;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(150% 62% at 42% 104%, rgba(226, 142, 88, 0.3) 0%, rgba(226, 142, 88, 0) 46%),
+    radial-gradient(120% 52% at 72% 106%, rgba(196, 96, 120, 0.16) 0%, rgba(196, 96, 120, 0) 52%),
+    linear-gradient(
+      to bottom,
+      var(--night-0) 0%,
+      var(--night-1) 28%,
+      var(--night-2) 54%,
+      var(--night-3) 78%,
+      var(--night-4) 93%,
+      var(--horizon) 100%
+    );
+}
+
+/* ── Milky Way ─────────────────────────────────────────────────────────── */
+
+.scene-galaxy {
+  position: absolute;
+  top: -28%;
+  left: 45%;
+  width: 44vw;
+  height: 160vh;
+  transform: translateX(-50%) rotate(14deg);
+  /* Many small puffs strung along the band, not two big ones. Two large
+     gradients blur together into a single glowing blob that reads as a lens
+     flare; a chain of small ones keeps the shape of a band. */
+  background:
+    radial-gradient(22% 9% at 47% 8%, rgba(226, 249, 255, 0.3) 0%, rgba(226, 249, 255, 0) 70%),
+    radial-gradient(20% 8% at 55% 19%, rgba(150, 128, 255, 0.26) 0%, rgba(150, 128, 255, 0) 72%),
+    radial-gradient(24% 10% at 44% 30%, rgba(96, 220, 244, 0.26) 0%, rgba(96, 220, 244, 0) 70%),
+    radial-gradient(19% 8% at 56% 41%, rgba(236, 252, 255, 0.24) 0%, rgba(236, 252, 255, 0) 72%),
+    radial-gradient(22% 9% at 46% 53%, rgba(178, 138, 255, 0.22) 0%, rgba(178, 138, 255, 0) 72%),
+    radial-gradient(18% 8% at 54% 64%, rgba(86, 206, 236, 0.2) 0%, rgba(86, 206, 236, 0) 72%),
+    radial-gradient(16% 7% at 45% 74%, rgba(214, 244, 255, 0.16) 0%, rgba(214, 244, 255, 0) 74%);
+  filter: blur(30px);
+  animation: scene-breathe 16s ease-in-out infinite;
+}
+
+/* A darker dust lane running down the middle of the band. */
+.scene-galaxy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(5% 20% at 49% 24%, rgba(5, 8, 20, 0.6) 0%, rgba(5, 8, 20, 0) 76%),
+    radial-gradient(4% 16% at 52% 48%, rgba(5, 8, 20, 0.5) 0%, rgba(5, 8, 20, 0) 78%);
+}
+
+@keyframes scene-breathe {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* ── Stars ─────────────────────────────────────────────────────────────── */
+
+.scene-star {
+  position: absolute;
+  border-radius: 9999px;
+  background: #ffffff;
+}
+
+.scene-star--twinkle {
+  animation-name: scene-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes scene-twinkle {
+  from {
+    opacity: 0.12;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Moon ──────────────────────────────────────────────────────────────── */
+
+.scene-moon {
+  position: absolute;
+  top: 10%;
+  right: 9%;
+  width: clamp(76px, 7.5vw, 124px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 62% 38%, rgba(158, 176, 208, 0.45) 0%, rgba(158, 176, 208, 0) 24%),
+    radial-gradient(circle at 34% 62%, rgba(148, 168, 203, 0.38) 0%, rgba(148, 168, 203, 0) 18%),
+    radial-gradient(circle at 38% 32%, #fdfcf5 0%, #e2e8f3 54%, #b4c0d8 100%);
+  box-shadow:
+    0 0 50px 14px rgba(196, 220, 255, 0.24),
+    0 0 150px 55px rgba(150, 190, 255, 0.14);
+  animation: scene-moonglow 11s ease-in-out infinite;
+}
+
+@keyframes scene-moonglow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 50px 14px rgba(196, 220, 255, 0.2),
+      0 0 150px 55px rgba(150, 190, 255, 0.11);
+  }
+  50% {
+    box-shadow:
+      0 0 66px 20px rgba(196, 220, 255, 0.3),
+      0 0 190px 72px rgba(150, 190, 255, 0.18);
+  }
+}
+
+/* ── Clouds ────────────────────────────────────────────────────────────── */
+
+.scene-cloud {
+  position: absolute;
+  left: 0;
+  /* The blur is what turns a union of ellipses into a painted cloud bank
+     instead of a row of bubbles. */
+  filter: blur(11px);
+  animation-name: scene-drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+@keyframes scene-drift {
+  from {
+    transform: translate3d(-55vw, 0, 0);
+  }
+  to {
+    transform: translate3d(155vw, 0, 0);
+  }
+}
+
+/* ── Shooting stars ────────────────────────────────────────────────────── */
+
+.scene-meteor {
+  position: absolute;
+  height: 1.5px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, rgba(190, 236, 255, 0) 0%, rgba(190, 236, 255, 0.8) 74%, #ffffff 100%);
+  opacity: 0;
+  animation-name: scene-shoot;
+  animation-timing-function: cubic-bezier(0.25, 0.4, 0.5, 1);
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+.scene-meteor::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -1.25px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 0 9px 2px rgba(200, 240, 255, 0.95);
+}
+
+/* Rotation lives inside the keyframes: a transform in an animation replaces
+   any transform on the element, so an inline rotate would simply be dropped
+   and every meteor would fly dead horizontal. Rotating before translating
+   also means the streak travels along its own axis. */
+@keyframes scene-shoot {
+  0% {
+    transform: rotate(var(--angle, 34deg)) translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    transform: rotate(var(--angle, 34deg)) translate3d(78vw, 0, 0);
+    opacity: 0;
+  }
+}
+
+/* ── Horizon, treeline and fireflies ───────────────────────────────────── */
+
+.scene-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40vh;
+  background:
+    radial-gradient(56% 100% at 38% 112%, rgba(248, 172, 96, 0.34) 0%, rgba(248, 172, 96, 0) 60%),
+    radial-gradient(44% 92% at 66% 116%, rgba(232, 116, 128, 0.2) 0%, rgba(232, 116, 128, 0) 62%);
+}
+
+.scene-trees {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 32vh;
+  min-height: 210px;
+}
+
+.scene-firefly {
+  position: absolute;
+  border-radius: 9999px;
+  background: #d8f79a;
+  box-shadow: 0 0 8px 2px rgba(196, 245, 130, 0.7);
+  opacity: 0;
+  animation-name: scene-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes scene-float {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  20%,
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(var(--fx, 6vw), var(--fy, -14vh), 0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-galaxy,
+  .scene-star--twinkle,
+  .scene-moon,
+  .scene-cloud,
+  .scene-meteor,
+  .scene-firefly {
+    animation: none !important;
+  }
+  .scene-meteor,
+  .scene-firefly {
+    opacity: 0;
+  }
+}
+
+/* ══ Surfaces ══════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Frosted night glass. The inset highlight along the top edge is what keeps
+     it from reading as a flat rectangle over the sky. */
+  .panel {
+    position: relative;
+    background: var(--panel-bg);
+    backdrop-filter: blur(22px) saturate(130%);
+    -webkit-backdrop-filter: blur(22px) saturate(130%);
+    border: 1px solid var(--panel-line);
+    border-radius: 1rem;
+    box-shadow:
+      0 24px 60px -28px rgba(0, 0, 0, 0.9),
+      0 2px 10px -4px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 0 rgba(190, 220, 255, 0.1);
+  }
+
+  /* Adds a faint moonlit sheen across the top of a panel. */
+  .panel-lit::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      120% 70% at 50% -20%,
+      rgba(108, 197, 255, 0.13) 0%,
+      rgba(108, 197, 255, 0) 70%
+    );
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      background-color 0.16s ease,
+      border-color 0.16s ease,
+      box-shadow 0.16s ease,
+      color 0.16s ease,
+      transform 0.1s ease;
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: linear-gradient(180deg, #4fb4f5 0%, var(--accent-deep) 100%);
+    color: #041524;
+    box-shadow:
+      0 12px 30px -12px rgba(76, 176, 245, 0.8),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #6cc5ff 0%, #3aa0e2 100%);
+  }
+
+  .btn-success {
+    background: linear-gradient(180deg, #4ad99a 0%, #16a06a 100%);
+    color: #03251a;
+    box-shadow:
+      0 12px 30px -12px rgba(74, 217, 154, 0.75),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  }
+  .btn-success:hover:not(:disabled) {
+    background: linear-gradient(180deg, #5fe8ab 0%, #1bb478 100%);
+  }
+
+  .btn-ghost {
+    background: rgba(146, 180, 235, 0.08);
+    color: var(--ink-soft);
+    border: 1px solid var(--panel-line);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: rgba(146, 180, 235, 0.16);
+    color: var(--ink);
+    border-color: rgba(142, 180, 255, 0.3);
+  }
+
+  .field {
+    width: 100%;
+    background: rgba(4, 9, 22, 0.55);
+    border: 1px solid var(--panel-line);
+    border-radius: 0.75rem;
+    color: var(--ink);
+    transition:
+      border-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+  .field::placeholder {
+    color: var(--ink-faint);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 197, 255, 0.16);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: rgba(146, 180, 235, 0.1);
+    border: 1px solid var(--panel-line);
+    border-radius: 9999px;
+  }
+
+  /* ── Navigation ─────────────────────────────────────────────────────── */
+
+  /* A floating glass island rather than a full-width bar, so the night scene
+     runs edge to edge behind it. */
+  .nav-island {
+    background: rgba(8, 14, 32, 0.66);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(142, 180, 255, 0.16);
+    border-radius: 9999px;
+    box-shadow:
+      0 20px 48px -24px rgba(0, 0, 0, 0.95),
+      inset 0 1px 0 0 rgba(190, 220, 255, 0.11);
+  }
+
+  .nav-mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: none;
+    filter: drop-shadow(0 0 8px rgba(108, 197, 255, 0.45));
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+  .group:hover .nav-mark {
+    filter: drop-shadow(0 0 14px rgba(108, 197, 255, 0.8));
+    transform: rotate(-8deg) scale(1.06);
+  }
+
+  .nav-wordmark {
+    font-size: 1.0625rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    background: linear-gradient(100deg, #ffffff 0%, #cfe8ff 60%, var(--accent-warm) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Segmented control. Shown at every width, because hiding the nav on small
+     screens left no way to reach multiplayer. */
+  .nav-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(142, 180, 255, 0.1);
+    border-radius: 9999px;
+  }
+
+  .nav-tab {
+    padding: 0.4rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--ink-faint);
+    transition:
+      color 0.16s ease,
+      background-color 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+  .nav-tab:hover {
+    color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  .nav-tab.is-active {
+    color: var(--ink);
+    background: linear-gradient(180deg, rgba(108, 197, 255, 0.24), rgba(108, 197, 255, 0.1));
+    box-shadow:
+      inset 0 0 0 1px rgba(108, 197, 255, 0.34),
+      0 6px 16px -8px rgba(108, 197, 255, 0.7);
+  }
+  @media (min-width: 640px) {
+    .nav-tab {
+      padding: 0.4rem 0.95rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Cyan-to-amber wash used on the big headings. */
+  .text-glow {
+    background: linear-gradient(100deg, #ffffff 0%, #bfe4ff 48%, var(--accent-warm) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* ══ Typing field ══════════════════════════════════════════════════════════
+   Word-per-element rendering with a caret that slides between characters and
+   lines that scroll as you go, the way monkeytype does it.
+   ════════════════════════════════════════════════════════════════════════ */
+
+.tf {
+  --tf-lines: 3;
+  --tf-lh: 1.75;
+  position: relative;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(1.05rem, 2.1vw, 1.5rem);
+  line-height: var(--tf-lh);
+  cursor: text;
+}
+
+/* The window onto the passage: exactly N lines tall, everything else clipped. */
+.tf-viewport {
+  position: relative;
+  overflow: hidden;
+  height: calc(var(--tf-lines) * var(--tf-lh) * 1em);
+}
+
+.tf-words {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1ch;
+  row-gap: 0;
+  align-content: flex-start;
+  transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+  /* Dragging across the passage should never select it. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tf-word {
+  position: relative;
+  white-space: pre;
+}
+
+/* A mistyped space shows up in the gap before the following word. */
+.tf-word.is-badspace::before {
+  content: "";
+  position: absolute;
+  top: 0.18em;
+  bottom: 0.18em;
+  left: -1ch;
+  width: 1ch;
+  border-radius: 2px;
+  background: rgba(255, 106, 128, 0.25);
+}
+
+.tf-ch {
+  color: var(--ink-faint);
+  /* Barely there. Anything longer and several characters are mid-fade at
+     speed, which reads as the display lagging behind the keyboard. */
+  transition: color 0.05s linear;
+}
+.tf-ch.is-ok {
+  color: var(--ink);
+}
+.tf-ch.is-bad {
+  color: #ff6a80;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 106, 128, 0.55);
+  text-underline-offset: 0.18em;
+}
+
+.tf-caret {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent-warm);
+  box-shadow: 0 0 10px rgba(245, 198, 107, 0.8);
+  /* 65ms keeps up past 150wpm while still reading as a glide. A longer
+     transition means the caret is permanently a character behind. */
+  transition: transform 0.065s cubic-bezier(0.2, 0.6, 0.35, 1);
+  will-change: transform;
+}
+
+.tf-caret--blink {
+  animation: tf-blink 1.05s step-end infinite;
+}
+
+@keyframes tf-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.tf-caret--hidden {
+  opacity: 0;
+}
+
+/* Out of focus: soften the passage and invite a click, like monkeytype. */
+.tf-words.is-blurred {
+  filter: blur(4px);
+  opacity: 0.55;
+  transition:
+    filter 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.tf-focusnote {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tf-words,
+  .tf-caret {
+    transition: none;
+  }
+  .tf-caret--blink {
+    animation: none;
+  }
 }

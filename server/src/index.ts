@@ -6,12 +6,21 @@ import cors from "cors";
 import { TypingRoom } from "./rooms/TypingRoom";
 
 const app = express();
+
+// `credentials` is only meaningful against a concrete origin; pairing it with
+// "*" is rejected by every browser, and we send no cookies anyway.
+const clientOrigin = process.env.CLIENT_ORIGIN;
 app.use(
-    cors({
-        origin: process.env.CLIENT_ORIGIN || "*",
-        credentials: true,
-    })
+    cors(
+        clientOrigin
+            ? { origin: clientOrigin, credentials: true }
+            : { origin: "*" }
+    )
 );
+
+app.get("/health", (_req, res) => {
+    res.json({ ok: true });
+});
 
 const httpServer = createServer(app);
 
