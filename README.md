@@ -1,4 +1,4 @@
-# ⌨️ Type Brawl
+# ⌨️ starfall
 
 A little multiplayer typing race game I built to learn how real-time / multiplayer stuff actually works. You join a room with your friends (or randoms), everyone types out the same paragraph, and whoever finishes fastest wins. Think typing-test websites, but live against other people instead of just a timer.
 
